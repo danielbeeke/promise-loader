@@ -1,0 +1,30 @@
+{
+  "name": "promise-loader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "parcel index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielbeeke/promise-loader.git"
+  },
+  "author": "Daniel Beeke",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/danielbeeke/promise-loader/issues"
+  },
+  "homepage": "https://github.com/danielbeeke/promise-loader#readme",
+  "dependencies": {
+    "@ldflex/comunica": "^5.0.1",
+    "jsonld-context-parser": "^2.2.1",
+    "ldflex": "^2.15.0",
+    "n3": "^1.16.2",
+    "uhandlers": "^0.6.1",
+    "uhtml": "^3.0.1"
+  },
+  "devDependencies": {
+    "parcel": "^2.7.0"
+  }
+}

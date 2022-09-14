@@ -1,4 +1,4 @@
-export const wait = (seconds: number, text: string) => {
+export const wait = (seconds: number, text: any) => {
   const promise = new Promise((resolve) => {
     setTimeout(() => {
       resolve(text)

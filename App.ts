@@ -1,21 +1,32 @@
-import { renderers } from './renderer'
+import { createPerson } from './person'
+import { html, render } from './uhtml'
 import { wait } from './wait'
-import { promiseLoader } from './promiseLoader'
+let person = null
 
-const currentRenderer = renderers.htm
+const withLoader = (promise, loader) => {
+  promise.loader = loader
+  return promise
+}
 
-const { html, render } = promiseLoader({
-  element: document.body,
-  html: currentRenderer.html,
-  render: currentRenderer.render,
-  loader: currentRenderer.html`Loading`
-})
+const draw = async () => {
+  if (person === null) person = await createPerson()
 
-const draw = () => render(html`
-  Hello ${'World'} ${wait(1, html`woop woop`)}
-  <br />
-  ${html`test 2: ${wait(2, 'woop 2')}`}
-`)
+  render(document.body, html`
+    Hello ${'World'} <span>${withLoader(wait(1, html`woop woop`), html`...`)}</span>
+    <br />
+    ${html`test 2: <span>${wait(2, 'woop 2')}</span>`}
+
+    <h1>LDflex</h1>
+    <span>${person.name}</span>
+    <span>${withLoader(person.birthDate, html`......`)}</span>
+
+
+    <div class="person">
+      <h2>${person.name}</h2>
+      <img src=${person.depiction}/>
+    </div>
+  `)
+}
 
 draw()
 
