@@ -28,7 +28,6 @@ export const interpolatedValueHandler = (options: {
 
   return async function (templates, ...values) {
     const firstItem = values.find(value => typeof value.extendPath === 'function')
-    // const property = await (await firstItem.predicate).value
     const object = firstItem.parent
     const paths = values.filter(value => typeof value.extendPath === 'function')
 
@@ -44,11 +43,12 @@ export const interpolatedValueHandler = (options: {
     try {
       object.finalClause = (variable) => `VALUES ${variable} { <${object.subject.value}> }`
       await object.proxy.preload(...pathExpressions)
-      // const cache = object.propertyCache
-      // for (const path of paths) {
-      //   path.propertyCache = cache
-      // }
-      console.log(object)
+
+      for (const path of paths) {
+        const predicate = await (await path.predicate).value
+        const cache = object.resultsCache[0].path.propertyCache[predicate]
+        path.path.resultsCache = cache
+      }
     }
     catch (exception) {
       console.log(exception)

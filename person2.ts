@@ -9,22 +9,33 @@ import { namedNode } from '@rdfjs/data-model'
  * - (optional) a subject property on the path data
  * - (optional) a parent property on the path data
  */
- export default class ParentHandler {
+ class ParentHandler {
   handle(pathData) {
-  // Traverse parents until we find a subject
     let node = pathData
-
-    while (node.parent) {
-      node = node.parent
-    }
-
+    while (node.parent) node = node.parent
     return node
   }
 
 }
 
+/**
+ * Returns a new path starting from the subject of the current path.
+ *
+ * Requires:
+ * - (optional) a subject property on the path data
+ * - (optional) a parent property on the path data
+ */
+class PathHandler {
+  handle(pathData) {
+     return pathData
+  }
+
+}
+
+
 const handlers = Object.assign({}, defaultHandlers, {
-  parent: new ParentHandler()
+  parent: new ParentHandler(),
+  path: new PathHandler()
 })
 
 export const createPerson = async (uri: string) => {

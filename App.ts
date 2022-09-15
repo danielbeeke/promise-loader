@@ -1,13 +1,6 @@
 import { createPerson } from './person2'
-import { html, render, Hole } from './uhtml'
-import { wait } from './wait'
+import { html, render } from './uhtml'
 let person = null
-let person1 = null
-
-const withLoader = (promise, loader) => {
-  promise.loader = loader
-  return promise
-}
 
 const draw = async () => {
   if (person === null) {
