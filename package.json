@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "parcel index.html"
+    "dev": "parcel index.html",
+    "postinstall": "patch-package"
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,7 @@
     "uhtml": "^3.0.1"
   },
   "devDependencies": {
-    "parcel": "^2.7.0"
+    "parcel": "^2.7.0",
+    "patch-package": "^6.4.7"
   }
 }

@@ -1,4 +1,4 @@
-import { createPerson } from './person'
+import { createPerson } from './person2'
 import { html, render, Hole } from './uhtml'
 import { wait } from './wait'
 let person = null
@@ -11,18 +11,17 @@ const withLoader = (promise, loader) => {
 
 const draw = async () => {
   if (person === null) {
-    person1 = await createPerson()
-    person = person1['^rdf:type']
+    person = await createPerson('https://danielbeeke.nl/')
   }
 
   render(document.body, html`
     <div class="person">
       <h3>
-        <span>${person.title}</span>
+        <span>${person.name}</span>
         <span>${person.givenName}</span>
         <span>${person.familyName}</span>
       </h3>
-      <img src=${person.depiction.url}/>
+      <img src=${person.img}/>
       <span>${person.birthDate}</span>
       <span>${person.mbox}</span>
     </div>

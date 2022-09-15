@@ -27,20 +27,32 @@ export const interpolatedValueHandler = (options: {
   }
 
   return async function (templates, ...values) {
-    const object = values.find(value => typeof value.extendPath === 'function')
+    const firstItem = values.find(value => typeof value.extendPath === 'function')
+    // const property = await (await firstItem.predicate).value
+    const object = firstItem.parent
+    const paths = values.filter(value => typeof value.extendPath === 'function')
 
     const pathExpressions = (await Promise.all(
-      values
-        .filter(value => typeof value.extendPath === 'function')
-        .map(value => value.pathExpression)
+      paths.map(value => value.pathExpression)
     )).map(pathExpression => {
       return pathExpression.filter(item => item.predicate).map(item => item.predicate.value)
     }).map(pathExpression => {
       const parts = pathExpression.map(part => part.startsWith('http') ? `<${part}>` : part)
       return parts.join(' / ')
     })
-  
-    await object.preload(...pathExpressions)
+
+    try {
+      object.finalClause = (variable) => `VALUES ${variable} { <${object.subject.value}> }`
+      await object.proxy.preload(...pathExpressions)
+      // const cache = object.propertyCache
+      // for (const path of paths) {
+      //   path.propertyCache = cache
+      // }
+      console.log(object)
+    }
+    catch (exception) {
+      console.log(exception)
+    }
 
     values = values.map((value, index) => {
       const isAttr = templates[index].trim().endsWith('=')
@@ -79,7 +91,7 @@ const mapValue = (options, value) => {
           const type = await (resolved?.datatype)?.id ?? 'iri'
           const valueValue = await resolved?.value  
 
-          if (!valueValue) return ''
+          if (!valueValue) return parentNode.innerHTML = ''
 
           if (!options.dataHandlers[type]) throw new Error('Missing data handler: ' + type)
           return render(parentNode, options.dataHandlers[type](valueValue))  
