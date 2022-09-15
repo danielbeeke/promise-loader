@@ -2,25 +2,29 @@ import { createPerson } from './person'
 import { html, render, Hole } from './uhtml'
 import { wait } from './wait'
 let person = null
+let person1 = null
 
 const withLoader = (promise, loader) => {
   promise.loader = loader
   return promise
 }
 
-const nest = (templates, ...values) => async (object) => {
-  return html(templates, ...values)
-}
-
 const draw = async () => {
-  if (person === null) person = await createPerson()
+  if (person === null) {
+    person1 = await createPerson()
+    person = person1['^rdf:type']
+  }
 
   render(document.body, html`
-
     <div class="person">
-      ${nest`
-        <img src=${person.depiction}/>
-      `(person)}
+      <h3>
+        <span>${person.title}</span>
+        <span>${person.givenName}</span>
+        <span>${person.familyName}</span>
+      </h3>
+      <img src=${person.depiction.url}/>
+      <span>${person.birthDate}</span>
+      <span>${person.mbox}</span>
     </div>
   `)
 }

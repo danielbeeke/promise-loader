@@ -1,4 +1,4 @@
-import { html, render } from 'uhtml'
+import { html, render } from 'uhtml/esm/async'
 import { JsonLdContextNormalized } from 'jsonld-context-parser'
 import { foreign } from 'uhandlers'
 
@@ -26,7 +26,22 @@ export const interpolatedValueHandler = (options: {
     if (expandedType !== type) options.dataHandlers[expandedType] = handler
   }
 
-  return function (templates, ...values) {
+  return async function (templates, ...values) {
+    const object = values.find(value => typeof value.extendPath === 'function')
+
+    const pathExpressions = (await Promise.all(
+      values
+        .filter(value => typeof value.extendPath === 'function')
+        .map(value => value.pathExpression)
+    )).map(pathExpression => {
+      return pathExpression.filter(item => item.predicate).map(item => item.predicate.value)
+    }).map(pathExpression => {
+      const parts = pathExpression.map(part => part.startsWith('http') ? `<${part}>` : part)
+      return parts.join(' / ')
+    })
+  
+    await object.preload(...pathExpressions)
+
     values = values.map((value, index) => {
       const isAttr = templates[index].trim().endsWith('=')
       const isLDflex = typeof value.extendPath === 'function'

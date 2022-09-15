@@ -14,10 +14,12 @@ export const createPerson = async () => {
       schema:title       "Mr" ;
       schema:givenName   "Daniel" ;
       schema:birthDate "1990-01-07"^^xsd:date ;
-      schema:family_name "Beeke" ;
+      schema:familyName "Beeke" ;
       schema:mbox        <mailto:mail@danielbeeke.nl> ;
       schema:homepage    <https://danielbeeke.nl> ;
-      schema:depiction   <https://danielbeeke.nl/images/daniel.jpg> ;
+      schema:depiction   [
+        schema:url <https://danielbeeke.nl/images/daniel.jpg> 
+      ];
   
       schema:knows ( [
           a schema:Person ;
@@ -27,5 +29,5 @@ export const createPerson = async () => {
       schema:phone       <tel:0031637346364> .
   `)
   
-  return LDflexPath(store, 'https://danielbeeke.nl', prefixes, 'schema')
+  return LDflexPath(store, 'https://schema.org/Person', prefixes, 'schema')
 }
