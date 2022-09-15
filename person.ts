@@ -6,7 +6,8 @@ export const createPerson = async () => {
   const {store, prefixes} = await rdfToStore(`
   @prefix schema: <https://schema.org/> .
   @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-  
+  @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
   <https://danielbeeke.nl>
       a                schema:Person ;
       schema:name        "Daniel Beeke" ;

@@ -1,6 +1,6 @@
 import { interpolatedValueHandler } from './interpolatedValueHandler'
 import { html as uHtml } from 'uhtml'
-export { render } from 'uhtml'
+export { render, Hole } from 'uhtml'
 
 export const html = interpolatedValueHandler({
   defaultLoader: uHtml`Loading`,
@@ -11,6 +11,12 @@ export const html = interpolatedValueHandler({
   dataHandlers: {
     'rdf:langString': (value) => value,
     'xsd:string': (value) => value,
-    'xsd:date': (value) => new Date(value).toLocaleString('nl', { dateStyle: 'short' })
+    'xsd:date': (value) => new Date(value).toLocaleString('nl', { dateStyle: 'short' }),
+    'iri': (string: string) => {
+      if (string.includes('mailto:')) {
+        return string
+      }
+      return string
+    }
   }
 })
