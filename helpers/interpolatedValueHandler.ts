@@ -2,6 +2,7 @@ import { html, render } from 'uhtml'
 import { JsonLdContextNormalized } from 'jsonld-context-parser'
 import { foreign } from 'uhandlers'
 import { loaders } from './withLoader'
+import { preloadPaths } from './preloadPaths'
 
 const ldflexAttribute = (value, preloader) => foreign((node, name, value) => {
   preloader.then(() => {
@@ -14,7 +15,8 @@ const ldflexAttribute = (value, preloader) => foreign((node, name, value) => {
 }, value)
 
 export const interpolatedValueHandler = (options: {
-  defaultLoader: any,
+  loader: any,
+  error: any,
   dataHandlers: {
     [key: string]: Function
   },
@@ -46,55 +48,7 @@ export const interpolatedValueHandler = (options: {
   }
 }
 
-export const preloadPaths = async (paths) => {
-  const pathSubjects = new Map()
 
-  const filteredPaths = (await Promise.all(paths.map(async path => {
-    return await path.path
-  }))).filter(path => {
-    return !path.resultsCache
-  })
-  .map(path => path.proxy)
-
-  for (const path of filteredPaths) {
-    const subject = await (await path.subject).value
-    if (!pathSubjects.has(subject)) pathSubjects.set(subject, [])
-    const pathParts = pathSubjects.get(subject)
-    pathParts.push(path)
-  }
-
-  for (const pathParts of pathSubjects.values()) {
-    const pathExpressions = (await Promise.all(
-      pathParts.map(value => value.pathExpression)
-    )).map(pathExpression => {
-      return pathExpression.filter(item => item.predicate).map(item => item.predicate.value)
-    }).map(pathExpression => {
-      const parts = pathExpression.map(part => part.startsWith('http') ? `<${part}>` : part)
-      return parts.join(' / ')
-    })
-    .filter(Boolean)
-
-    const object = pathParts[0].parent
-
-    if (object) {
-      try {
-        object.finalClause = (variable) => `VALUES ${variable} { <${object.subject.value}> }`
-        await object.proxy.preload(...pathExpressions)
-  
-        for (const path of pathParts) {
-          const predicate = await (await path?.predicate)?.value
-          if (predicate) {
-            const cache = object.resultsCache[0].path.propertyCache[predicate]
-            path.path.resultsCache = cache  
-          }
-        }
-      }
-      catch (exception) {
-        console.log(exception)
-      }  
-    } 
-  }
-}
 
 const mapValue = (options, value, preloader) => {
   const isLDflex = typeof value?.extendPath === 'function'
@@ -107,7 +61,7 @@ const mapValue = (options, value, preloader) => {
     const parentNode = comment.parentNode
 
     if (parentNode && parentNode instanceof HTMLElement) {
-      render(parentNode, loaders.get(value) ?? options.defaultLoader)
+      render(parentNode, loaders.get(value) ?? options.loader())
 
       if (isPromise && !isLDflex) {
         return value.then(resolved => render(parentNode, html`${resolved}`))
@@ -122,7 +76,9 @@ const mapValue = (options, value, preloader) => {
 
           if (!options.dataHandlers[type]) throw new Error('Missing data handler: ' + type)
           return render(parentNode, options.dataHandlers[type](valueValue))  
-        }))
+        })).catch((exception) => {
+          render(parentNode, options.error(exception))
+        })
       }
     }
   }

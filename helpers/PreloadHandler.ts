@@ -48,7 +48,6 @@ export default class PreloadHandler {
       vars,
       resultVar
     } = await this.createQuery(predicates, path);
-    console.log(query)
     const {
       settings: {
         queryEngine

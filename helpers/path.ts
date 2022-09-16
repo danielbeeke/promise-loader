@@ -4,6 +4,7 @@ import { namedNode } from '@rdfjs/data-model'
 import LanguageHandler from './LanguageHandler'
 import PreloadHandler from './PreloadHandler'
 import defaultIterationHandlers from '@ldflex/async-iteration-handlers'
+import prefixes from './prefixes'
 
 class ParentHandler {
   handle(pathData) {
@@ -65,3 +66,5 @@ export const path = async (iri: string, prefixes, vocab?: string, source?: strin
   const path = new PathFactory({ queryEngine, handlers, context })
   return path.create({ subject: namedNode(iri) })
 }
+
+export const get = (iri, vocab = 'foaf', source = null) => path(iri, prefixes, vocab, source)
