@@ -1,38 +1,40 @@
-import { createPerson } from './person2'
-import { html, render } from './uhtml'
-let person = null
+import { path } from './helpers/path'
+import { html, render } from './helpers/uhtml'
+import prefixes from './helpers/prefixes'
 
-const draw = async () => {
-  if (person === null) {
-    person = await createPerson('https://danielbeeke.nl/')
+;(async () => {
+  const ruben = await path('https://ruben.verborgh.org/profile/#me', prefixes, 'foaf')
+  const daniel = await path('https://danielbeeke.nl/', prefixes, 'foaf')
+
+  const draw = async () => {
+    render(document.body, html`
+      <div class="person">
+
+        <h2>${ruben.label}</h2>
+
+        <ul>
+          ${ruben.interest.map(interest => html`
+            <li><span>${interest['rdfs:label']}</span></li>
+          `)}
+        </ul>
+
+        <ul style="max-height: 300px; overflow: scroll; background: #eee;">
+          ${ruben.knows.map(person => html`
+            <li><span>${person['rdfs:label']}</span></li>
+          `)}
+        </ul>
+
+        <h3>
+          <span>${daniel.name}</span>
+          <span>${daniel.givenName}</span>
+          <span>${daniel.familyName}</span>
+        </h3>
+        <img src=${daniel.img}/>
+        <span>${daniel.mbox}</span>
+      </div>
+    `)
   }
 
-  render(document.body, html`
-    <div class="person">
-      <h3>
-        <span>${person.name}</span>
-        <span>${person.givenName}</span>
-        <span>${person.familyName}</span>
-      </h3>
-      <img src=${person.img}/>
-      <span>${person.birthDate}</span>
-      <span>${person.mbox}</span>
-    </div>
-  `)
-}
+  draw()
 
-draw()
-
-// setTimeout(() => {
-//   draw()
-//   console.log('re-render')
-// }, 4000)
-
-
-/*
-    Hello ${'World'} <span>${withLoader(wait(1, html`woop woop`), html`...`)}</span>
-    <br />
-    ${html`test 2: <span>${wait(2, 'woop 2')}</span>`}
-
-    <h1>LDflex</h1>
-*/
+})()

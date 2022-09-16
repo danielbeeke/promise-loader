@@ -27,36 +27,12 @@ export const interpolatedValueHandler = (options: {
   }
 
   return async function (templates, ...values) {
-    const firstItem = values.find(value => typeof value.extendPath === 'function')
-    const object = firstItem.parent
-    const paths = values.filter(value => typeof value.extendPath === 'function')
-
-    const pathExpressions = (await Promise.all(
-      paths.map(value => value.pathExpression)
-    )).map(pathExpression => {
-      return pathExpression.filter(item => item.predicate).map(item => item.predicate.value)
-    }).map(pathExpression => {
-      const parts = pathExpression.map(part => part.startsWith('http') ? `<${part}>` : part)
-      return parts.join(' / ')
-    })
-
-    try {
-      object.finalClause = (variable) => `VALUES ${variable} { <${object.subject.value}> }`
-      await object.proxy.preload(...pathExpressions)
-
-      for (const path of paths) {
-        const predicate = await (await path.predicate).value
-        const cache = object.resultsCache[0].path.propertyCache[predicate]
-        path.path.resultsCache = cache
-      }
-    }
-    catch (exception) {
-      console.log(exception)
-    }
+    const paths = values.filter(value => typeof value?.extendPath === 'function')
+    if (paths.length) await preloadPaths(paths)
 
     values = values.map((value, index) => {
       const isAttr = templates[index].trim().endsWith('=')
-      const isLDflex = typeof value.extendPath === 'function'
+      const isLDflex = typeof value?.extendPath === 'function'
       const mapper = mapValue(options, isAttr && isLDflex ? ldflexAttribute(value) : value)
       return mapper
     })
@@ -65,8 +41,56 @@ export const interpolatedValueHandler = (options: {
   }
 }
 
+export const preloadPaths = async (paths) => {
+  const pathSubjects = new Map()
+
+  const filteredPaths = (await Promise.all(paths.map(async path => {
+    return await path.path
+  }))).filter(path => !path.resultsCache)
+  .map(path => path.proxy)
+
+  for (const path of filteredPaths) {
+    const subject = await (await path.subject).value
+    if (!pathSubjects.has(subject)) pathSubjects.set(subject, [])
+    const pathParts = pathSubjects.get(subject)
+    pathParts.push(path)
+  }
+
+  for (const pathParts of pathSubjects.values()) {
+    const pathExpressions = (await Promise.all(
+      pathParts.map(value => value.pathExpression)
+    )).map(pathExpression => {
+      return pathExpression.filter(item => item.predicate).map(item => item.predicate.value)
+    }).map(pathExpression => {
+      const parts = pathExpression.map(part => part.startsWith('http') ? `<${part}>` : part)
+      return parts.join(' / ')
+    })
+    .filter(Boolean)
+
+    const object = pathParts[0].parent
+
+    if (object) {
+      try {
+        object.finalClause = (variable) => `VALUES ${variable} { <${object.subject.value}> }`
+         await object.proxy.preload(...pathExpressions)
+  
+        for (const path of pathParts) {
+          const predicate = await (await path?.predicate)?.value
+          if (predicate) {
+            const cache = object.resultsCache[0].path.propertyCache[predicate]
+            path.path.resultsCache = cache  
+          }
+        }
+      }
+      catch (exception) {
+        console.log(exception)
+      }  
+    } 
+  }
+}
+
 const mapValue = (options, value) => {
-  const isLDflex = typeof value.extendPath === 'function'
+  const isLDflex = typeof value?.extendPath === 'function'
   if (isLDflex) value = new Promise(resolve => resolve(value))
   const isPromise = value instanceof Promise
 
@@ -80,9 +104,7 @@ const mapValue = (options, value) => {
       render(parentNode, value.loader ?? options.defaultLoader)
 
       if (isPromise && !isLDflex) {
-        value.then(resolved => {
-          return render(parentNode, resolved)
-        })
+        value.then(resolved => render(parentNode, html`${resolved}`))
         return 
       }
 

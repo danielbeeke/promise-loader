@@ -18,7 +18,9 @@
   },
   "homepage": "https://github.com/danielbeeke/promise-loader#readme",
   "dependencies": {
+    "@ldflex/async-iteration-handlers": "^1.1.1",
     "@ldflex/comunica": "^5.0.1",
+    "async": "^3.2.4",
     "jsonld-context-parser": "^2.2.1",
     "ldflex": "^2.15.0",
     "n3": "^1.16.2",
