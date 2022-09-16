@@ -124,20 +124,24 @@ export function langMatches(tag, range) {
  * and/or be behind a function call.
  */
 export default class LanguageHandler {
+
+  private langCode: string
+
   constructor(langCode) {
     this.langCode = langCode;
   }
 
   // Resolves the data path, or returns a function that does so
   handle(pathData, path) {
-    return toIterablePromise(this._handle(pathData, path));
+    const promise = toIterablePromise(this._handle(pathData, path))
+    return Promise.resolve(promise)
   }
 
   async* _handle(pathData, path) {
-    pathData.skipDefaultLanguageFilter = true;
     for await (const item of path.results) {
-      if (langMatches(await item.language, this.langCode))
-        yield item;
+      if (langMatches(await item.language, this.langCode)) {
+        yield item.value;
+      }
     }
   }
 }

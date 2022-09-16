@@ -1,6 +1,7 @@
 import { html, render } from 'uhtml'
 import { JsonLdContextNormalized } from 'jsonld-context-parser'
 import { foreign } from 'uhandlers'
+import { loaders } from './withLoader'
 
 const ldflexAttribute = (value, preloader) => foreign((node, name, value) => {
   preloader.then(() => {
@@ -30,10 +31,7 @@ export const interpolatedValueHandler = (options: {
 
   return function (templates, ...values) {
     const paths = values.filter(value => typeof value?.extendPath === 'function')
-
-    console.log(paths)
-
-    const preloader = preloadPaths(paths)
+    const preloader = paths.length ? preloadPaths(paths) : Promise.resolve()
 
     values = values.map((value, index) => {
       const isAttr = templates[index].trim().endsWith('=')
@@ -43,7 +41,6 @@ export const interpolatedValueHandler = (options: {
       
       return mapValue(options, value, preloader)
     })
-
 
     return html(templates, ...values)
   }
@@ -82,7 +79,7 @@ export const preloadPaths = async (paths) => {
     if (object) {
       try {
         object.finalClause = (variable) => `VALUES ${variable} { <${object.subject.value}> }`
-         await object.proxy.preload(...pathExpressions)
+        await object.proxy.preload(...pathExpressions)
   
         for (const path of pathParts) {
           const predicate = await (await path?.predicate)?.value
@@ -101,7 +98,6 @@ export const preloadPaths = async (paths) => {
 
 const mapValue = (options, value, preloader) => {
   const isLDflex = typeof value?.extendPath === 'function'
-  if (isLDflex) value = new Promise(resolve => resolve(value))
   const isPromise = value instanceof Promise
 
   if (!isLDflex && !isPromise) return value
@@ -111,14 +107,14 @@ const mapValue = (options, value, preloader) => {
     const parentNode = comment.parentNode
 
     if (parentNode && parentNode instanceof HTMLElement) {
-      render(parentNode, value.loader ?? options.defaultLoader)
+      render(parentNode, loaders.get(value) ?? options.defaultLoader)
 
       if (isPromise && !isLDflex) {
-        return preloader.then(() => value.then(resolved => render(parentNode, html`${resolved}`)))
+        return value.then(resolved => render(parentNode, html`${resolved}`))
       }
 
       if (isLDflex) {
-        preloader.then(() => value.then(async resolved => {
+        return preloader.then(() => value.then(async resolved => {
           const type = await (resolved?.datatype)?.id ?? 'iri'
           const valueValue = await resolved?.value  
 

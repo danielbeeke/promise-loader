@@ -5,10 +5,14 @@ import prefixes from './helpers/prefixes'
 ;(async () => {
   const ruben = await path('https://ruben.verborgh.org/profile/#me', prefixes, 'foaf')
   const daniel = await path('https://danielbeeke.nl/', prefixes, 'foaf')
+  const soren = await path('http://dbpedia.org/resource/Søren_Kierkegaard', prefixes, 'dbo')
+  const catapub = await path('https://danielbeeke.nl', prefixes, 'foaf', 'http://localhost:8080/sparql')
 
   const draw = async () => {
     render(document.body, html`
       <div class="person">
+
+        <h1>${catapub.name}</h1>
 
         <h2>${ruben.label}</h2>
 
@@ -34,10 +38,16 @@ import prefixes from './helpers/prefixes'
           <span>${daniel.mbox}</span>        
         `}
 
+        <h1>${soren['rdfs:label'].en}</h1>
+
       </div>
     `)
   }
 
   draw()
+
+  // setTimeout(() => {
+  //   draw()
+  // }, 2000)
 
 })()

@@ -1,5 +1,5 @@
 export default {
-  schema: 'https://schema.org',
+  schema: 'https://schema.org/',
   foaf: 'http://xmlns.com/foaf/0.1/',
   rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
   dbo: 'http://dbpedia.org/ontology/',

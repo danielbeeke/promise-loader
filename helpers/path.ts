@@ -57,10 +57,11 @@ const handlers = {
   map
 }
 
-export const path = async (uri: string, prefixes, vocab?: string) => {
-  const queryEngine = new ComunicaEngine(uri)
+export const path = async (iri: string, prefixes, vocab?: string, source?: string) => {
+  if (!source) source = iri
+  const queryEngine = new ComunicaEngine(source)
   const context = { '@context': { ...prefixes }}
   if (vocab) { context['@context']['@vocab'] = prefixes[vocab] }
   const path = new PathFactory({ queryEngine, handlers, context })
-  return path.create({ subject: namedNode(uri) })
+  return path.create({ subject: namedNode(iri) })
 }
