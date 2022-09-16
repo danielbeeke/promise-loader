@@ -24,13 +24,16 @@ import prefixes from './helpers/prefixes'
           `)}
         </ul>
 
-        <h3>
-          <span>${daniel.name}</span>
-          <span>${daniel.givenName}</span>
-          <span>${daniel.familyName}</span>
-        </h3>
-        <img src=${daniel.img}/>
-        <span>${daniel.mbox}</span>
+        ${html`
+          <h3>
+            <span>${daniel.name}</span>
+            <span>${daniel.givenName}</span>
+            <span>${daniel.familyName}</span>
+          </h3>
+          <img src=${daniel.img}/>
+          <span>${daniel.mbox}</span>        
+        `}
+
       </div>
     `)
   }

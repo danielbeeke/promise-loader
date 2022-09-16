@@ -1,6 +1,6 @@
 import { interpolatedValueHandler } from './interpolatedValueHandler'
-import { html as uHtml } from 'uhtml/esm/async'
-export { render, Hole } from 'uhtml/esm/async'
+import { html as uHtml } from 'uhtml'
+export { render, Hole } from 'uhtml'
 
 export const html = interpolatedValueHandler({
   defaultLoader: uHtml`Loading...`,

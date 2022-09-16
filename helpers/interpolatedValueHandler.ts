@@ -1,12 +1,14 @@
-import { html, render } from 'uhtml/esm/async'
+import { html, render } from 'uhtml'
 import { JsonLdContextNormalized } from 'jsonld-context-parser'
 import { foreign } from 'uhandlers'
 
-const ldflexAttribute = (value) => foreign((node, name, value) => {
-  value.value.then(resolved => {
-    if (typeof resolved === 'string') {
-      node.setAttribute(name, resolved)
-    }  
+const ldflexAttribute = (value, preloader) => foreign((node, name, value) => {
+  preloader.then(() => {
+    value.value.then(resolved => {
+      if (typeof resolved === 'string') {
+        node.setAttribute(name, resolved)
+      }  
+    })  
   })
 }, value)
 
@@ -26,16 +28,22 @@ export const interpolatedValueHandler = (options: {
     if (expandedType !== type) options.dataHandlers[expandedType] = handler
   }
 
-  return async function (templates, ...values) {
+  return function (templates, ...values) {
     const paths = values.filter(value => typeof value?.extendPath === 'function')
-    if (paths.length) await preloadPaths(paths)
+
+    console.log(paths)
+
+    const preloader = preloadPaths(paths)
 
     values = values.map((value, index) => {
       const isAttr = templates[index].trim().endsWith('=')
       const isLDflex = typeof value?.extendPath === 'function'
-      const mapper = mapValue(options, isAttr && isLDflex ? ldflexAttribute(value) : value)
-      return mapper
+
+      if (isAttr && isLDflex) return ldflexAttribute(value, preloader)
+      
+      return mapValue(options, value, preloader)
     })
+
 
     return html(templates, ...values)
   }
@@ -46,7 +54,9 @@ export const preloadPaths = async (paths) => {
 
   const filteredPaths = (await Promise.all(paths.map(async path => {
     return await path.path
-  }))).filter(path => !path.resultsCache)
+  }))).filter(path => {
+    return !path.resultsCache
+  })
   .map(path => path.proxy)
 
   for (const path of filteredPaths) {
@@ -89,7 +99,7 @@ export const preloadPaths = async (paths) => {
   }
 }
 
-const mapValue = (options, value) => {
+const mapValue = (options, value, preloader) => {
   const isLDflex = typeof value?.extendPath === 'function'
   if (isLDflex) value = new Promise(resolve => resolve(value))
   const isPromise = value instanceof Promise
@@ -104,12 +114,11 @@ const mapValue = (options, value) => {
       render(parentNode, value.loader ?? options.defaultLoader)
 
       if (isPromise && !isLDflex) {
-        value.then(resolved => render(parentNode, html`${resolved}`))
-        return 
+        return preloader.then(() => value.then(resolved => render(parentNode, html`${resolved}`)))
       }
 
       if (isLDflex) {
-        value.then(async resolved => {
+        preloader.then(() => value.then(async resolved => {
           const type = await (resolved?.datatype)?.id ?? 'iri'
           const valueValue = await resolved?.value  
 
@@ -117,8 +126,7 @@ const mapValue = (options, value) => {
 
           if (!options.dataHandlers[type]) throw new Error('Missing data handler: ' + type)
           return render(parentNode, options.dataHandlers[type](valueValue))  
-        })
-        return
+        }))
       }
     }
   }
