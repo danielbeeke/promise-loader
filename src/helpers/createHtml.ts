@@ -1,8 +1,9 @@
-import { html, render } from 'uhtml'
+import { html, render, Hole } from 'uhtml'
 import { JsonLdContextNormalized } from 'jsonld-context-parser'
 import { foreign } from 'uhandlers'
 import { loaders } from './withLoader'
 import { preloadPaths } from './preloadPaths'
+import { path } from './path'
 
 const ldflexAttribute = (value, preloader) => foreign((node, name, value) => {
   preloader.then(() => {
@@ -14,24 +15,27 @@ const ldflexAttribute = (value, preloader) => foreign((node, name, value) => {
   })
 }, value)
 
-export const interpolatedValueHandler = (options: {
+export const createHtml = (options: {
   loader: any,
   error: any,
+  extraLDflexHandlers?: {
+    [key: string]: any
+  },
   dataHandlers: {
     [key: string]: Function
   },
-  context: {
+  prefixes: {
     [key: string]: string
   }
 }) => {
-  const parsedContext = new JsonLdContextNormalized(options.context)
+  const parsedContext = new JsonLdContextNormalized(options.prefixes)
   
   for (const [type, handler] of Object.entries(options.dataHandlers)) {
     const expandedType = parsedContext.expandTerm(type)
     if (expandedType !== type) options.dataHandlers[expandedType] = handler
   }
 
-  return function (templates, ...values) {
+  const htmlReplacement = function (templates, ...values) {
     const paths = values.filter(value => typeof value?.extendPath === 'function')
     const preloader = paths.length ? preloadPaths(paths) : Promise.resolve()
 
@@ -45,6 +49,15 @@ export const interpolatedValueHandler = (options: {
     })
 
     return html(templates, ...values)
+  }
+
+  const get = (iri, vocab = 'foaf', source = null) => path(iri, options.prefixes, vocab, source, options.extraLDflexHandlers)
+
+  return {
+    html: htmlReplacement,
+    render: render,
+    Hole,
+    get
   }
 }
 
