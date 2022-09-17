@@ -2,7 +2,7 @@ import { createHtml, prefixes } from '../src/index'
 import { withLoader } from '../src/helpers/withLoader'
 
 export const { html, render, Hole, get: getter } = createHtml({
-  loader: () => html`Loading...`,
+  loader: () => html`<span class="loader">Loading...</span>`,
   error: (exception) => html``,
   prefixes,
   dataHandlers: {
@@ -28,7 +28,7 @@ const philosopherData = [
   'Friedrich_Nietzsche',
   'Immanuel_Kant',
   'Plato',
-  'Aristotle'
+  'Marcus_Aurelius'
 ].map(id => { 
   const url = `http://dbpedia.org/resource/${id}`
   return [get(url), url, id]
@@ -65,7 +65,13 @@ const draw = () => {
             <p class="card-text truncate">${withLoader(person.rdfs_comment, loader(1000))}</p>
           </div>
 
+          <ul class="list-group list-group-flush" style="border-top: none;">
+            <li class="list-group-item"><em class="text-muted">Works:</em></li>
+          </ul>
+
           <ul class="list-group list-group-flush" style="max-height: 200px; border-top: none; overflow-y: scroll;">
+            <li class="list-group-item"><em class="text-muted">Works:</em></li>
+
             ${person['^dbo:author'].map(work => {
               return html`
               <li class="list-group-item">
