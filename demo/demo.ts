@@ -1,6 +1,6 @@
 import { createHtml, prefixes } from '../src/index'
 
-export const { html, render, Hole, get } = createHtml({
+export const { html, render, Hole, get: getter } = createHtml({
   loader: () => html`Loading...`,
   error: (exception) => html``,
   prefixes,
@@ -17,10 +17,21 @@ export const { html, render, Hole, get } = createHtml({
   }
 })
 
-const soren = get('http://dbpedia.org/resource/Søren_Kierkegaard', 'dbo', 'https://dbpedia.org/sparql')
+const get = (url) => getter(url, 'dbo', 'https://dbpedia.org/sparql')
+
+const philosopherUrls = [
+  'Søren_Kierkegaard',
+  'Friedrich_Nietzsche',
+  'Immanuel_Kant',
+  'Plato',
+  'Aristotle'
+].map(id => `http://dbpedia.org/resource/${id}`)
+
+const philosopherData = philosopherUrls.map(url => [get(url), url])
 
 const draw = () => {
   render(document.body, html`
+    <div class="container pt-5">
     <h1>A demonstration of <a target="_blank" href="https://github.com/danielbeeke/uhtml-ldflex">uHTML-LDflex</a></h1>
 
     <p>
@@ -35,17 +46,26 @@ const draw = () => {
       </ul>
     </p>
 
-    <div class="philosopher">
-      <h1>${soren.label}</h1>
-      <p>${soren.abstract}</p>
-      <span>${soren.deathYear}</span>
-      <img src=${soren.thumbnail} />
-      <ul>
-        ${soren.influenced.map(influencee => html`
-          <li>${influencee.label}</li>
-        `)}
-      </ul>
+    <div class="row row-cols-1 row-cols-md-5 g-4">
+      ${philosopherData.map(([person, url]) => html`
+      <div class="col">
+        <div class="card">
+          <img src=${person.thumbnail} class="card-img-top" alt=${person.label}>
+          <div class="card-body">
+            <h5 class="card-title">
+              <span>${person.label}</span>
+            </h5>
+            <em>✝<span>${person.deathYear}</span></em>
+
+            <p class="card-text truncate">${person.rdfs_comment}</p>
+            <a href=${url} target="_blank" class="btn btn-primary">Read more</a>
+          </div>
+        </div>
+      </div>
+      `)}
     </div>
+
+  </div>
   `)
 }
 
