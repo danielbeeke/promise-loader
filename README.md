@@ -1,6 +1,7 @@
 # uHTML ldflex
 
-This uHTML LDflex library only supports Sparql paths for now. In the future it will be possible to a more complex engine. This has been done to create a small library.
+This uHTML LDflex library only supports Sparql paths for now. In the future it will be possible to a
+use a more complex engine. This has been done to keep it small.
 
 # Important!
 
