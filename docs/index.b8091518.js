@@ -16,7 +16,7 @@ var e="undefined"!=typeof globalThis?globalThis:"undefined"!=typeof self?self:"u
     </p>
 
     <div class="row row-cols-1 row-cols-md-5 g-4">
-      ${cr.map((([e,t,r])=>nr`
+      ${cr.map((([e,t])=>nr`
       <div class="col">
         <div class="card">
           <img onload=${e=>e.target.classList.add("loaded")} src=${e.thumbnail} class="card-img-top" alt=" ">
@@ -27,8 +27,19 @@ var e="undefined"!=typeof globalThis?globalThis:"undefined"!=typeof self?self:"u
             <span>${ae(e.deathYear,ir(4))}</span>
 
             <p class="card-text truncate">${ae(e.rdfs_comment,ir(1e3))}</p>
-            <a href=${t} target="_blank" class="btn btn-primary">Read more</a>
           </div>
+
+          <ul class="list-group list-group-flush" style="max-height: 200px; border-top: none; overflow-y: scroll;">
+            ${e["^dbo:author"].map((e=>nr`
+              <li class="list-group-item">
+                <span>${e.label}</span>
+              </li>`))}
+          </ul>
+
+          <div class="card-footer">
+            <a href=${t} target="_blank" class="btn btn-primary">Read more</a>
+          </div>      
+
         </div>
       </div>
       `))}
@@ -36,4 +47,4 @@ var e="undefined"!=typeof globalThis?globalThis:"undefined"!=typeof self?self:"u
 
   </div>
   `);
-//# sourceMappingURL=index.53b5642a.js.map
+//# sourceMappingURL=index.b8091518.js.map

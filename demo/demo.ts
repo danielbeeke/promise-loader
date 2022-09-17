@@ -52,7 +52,7 @@ const draw = () => {
     </p>
 
     <div class="row row-cols-1 row-cols-md-5 g-4">
-      ${philosopherData.map(([person, url, id]) => html`
+      ${philosopherData.map(([person, url]) => html`
       <div class="col">
         <div class="card">
           <img onload=${(event) => event.target.classList.add('loaded')} src=${person.thumbnail} class="card-img-top" alt=" ">
@@ -63,8 +63,21 @@ const draw = () => {
             <span>${withLoader(person.deathYear, loader(4))}</span>
 
             <p class="card-text truncate">${withLoader(person.rdfs_comment, loader(1000))}</p>
-            <a href=${url} target="_blank" class="btn btn-primary">Read more</a>
           </div>
+
+          <ul class="list-group list-group-flush" style="max-height: 200px; border-top: none; overflow-y: scroll;">
+            ${person['^dbo:author'].map(work => {
+              return html`
+              <li class="list-group-item">
+                <span>${work.label}</span>
+              </li>`
+            })}
+          </ul>
+
+          <div class="card-footer">
+            <a href=${url} target="_blank" class="btn btn-primary">Read more</a>
+          </div>      
+
         </div>
       </div>
       `)}
