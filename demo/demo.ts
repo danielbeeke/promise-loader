@@ -1,4 +1,5 @@
 import { createHtml, prefixes } from '../src/index'
+import { withLoader } from '../src/helpers/withLoader'
 
 export const { html, render, Hole, get: getter } = createHtml({
   loader: () => html`Loading...`,
@@ -17,17 +18,21 @@ export const { html, render, Hole, get: getter } = createHtml({
   }
 })
 
+const loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a feugiat turpis. Nam bibendum sed nibh et vestibulum. Praesent nibh neque, imperdiet in eleifend vitae, auctor in erat. Vestibulum fermentum consectetur urna, id lacinia neque facilisis sollicitudin. Aenean quis purus tellus. Nunc risus leo, suscipit quis massa nec, hendrerit congue justo.'
+const loader = (length) => html`<span class="lorem">${loremIpsum.substring(0, length)}</span>`
+
 const get = (url) => getter(url, 'dbo', 'https://dbpedia.org/sparql')
 
-const philosopherUrls = [
+const philosopherData = [
   'Søren_Kierkegaard',
   'Friedrich_Nietzsche',
   'Immanuel_Kant',
   'Plato',
   'Aristotle'
-].map(id => `http://dbpedia.org/resource/${id}`)
-
-const philosopherData = philosopherUrls.map(url => [get(url), url])
+].map(id => { 
+  const url = `http://dbpedia.org/resource/${id}`
+  return [get(url), url, id]
+})
 
 const draw = () => {
   render(document.body, html`
@@ -47,17 +52,17 @@ const draw = () => {
     </p>
 
     <div class="row row-cols-1 row-cols-md-5 g-4">
-      ${philosopherData.map(([person, url]) => html`
+      ${philosopherData.map(([person, url, id]) => html`
       <div class="col">
         <div class="card">
-          <img src=${person.thumbnail} class="card-img-top" alt=${person.label}>
+          <img onload=${(event) => event.target.classList.add('loaded')} src=${person.thumbnail} class="card-img-top" alt=" ">
           <div class="card-body">
             <h5 class="card-title">
-              <span>${person.label}</span>
+              <span>${withLoader(person.label, loader(20))}</span>
             </h5>
-            <em>✝<span>${person.deathYear}</span></em>
+            <span>${withLoader(person.deathYear, loader(4))}</span>
 
-            <p class="card-text truncate">${person.rdfs_comment}</p>
+            <p class="card-text truncate">${withLoader(person.rdfs_comment, loader(1000))}</p>
             <a href=${url} target="_blank" class="btn btn-primary">Read more</a>
           </div>
         </div>
