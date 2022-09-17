@@ -1,6 +1,5 @@
 import { PathFactory, defaultHandlers } from 'ldflex'
-import ComunicaEngine from '@ldflex/comunica'
-import { namedNode } from '@rdfjs/data-model'
+import FetchEngine from './FetchEngine'
 import LanguageHandler from './LanguageHandler'
 import PreloadHandler from './PreloadHandler'
 import defaultIterationHandlers from '@ldflex/async-iteration-handlers'
@@ -60,11 +59,11 @@ const handlers = {
 
 export const path = async (iri: string, prefixes, vocab?: string, source?: string) => {
   if (!source) source = iri
-  const queryEngine = new ComunicaEngine(source)
+  const queryEngine = new FetchEngine(source)
   const context = { '@context': { ...prefixes }}
   if (vocab) { context['@context']['@vocab'] = prefixes[vocab] }
   const path = new PathFactory({ queryEngine, handlers, context })
-  return path.create({ subject: namedNode(iri) })
+  return path.create({ subject: { termType: 'NamedNode', value: iri } })
 }
 
 export const get = (iri, vocab = 'foaf', source = null) => path(iri, prefixes, vocab, source)
