@@ -24,7 +24,7 @@ const draw = () => {
     <h1>A demonstration of <a target="_blank" href="https://github.com/danielbeeke/uhtml-ldflex">uHTML-LDflex</a></h1>
 
     <p>
-      What are you seeing here?
+      What are you seeing <a target="_blank" href="https://github.com/danielbeeke/uhtml-ldflex/blob/master/demo/demo.ts">here</a>?
 
       <ul>
       <li>uHTML templating engine, that automatically resolved LDflex paths via type specific handlers.</li>

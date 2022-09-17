@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "dev": "parcel index.html",
-    "build": "parcel build --dist-dir ../docs index.html"
+    "build": "rm -rf ../docs && parcel build --dist-dir ../docs index.html && echo \"uhtml-ldflex.danielbeeke.nl\" > ../docs/CNAME"
   },
   "author": "Daniel Beeke",
   "license": "ISC"
