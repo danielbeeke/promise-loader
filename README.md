@@ -34,19 +34,6 @@ const soren = get('http://dbpedia.org/resource/Søren_Kierkegaard', 'dbo', 'http
 
 const draw = () => {
   render(document.body, html`
-    <h1>A demonstration of <a target="_blank" href="https://github.com/danielbeeke/uhtml-ldflex">uHTML-LDflex</a></h1>
-
-    <p>
-      What are you seeing <a target="_blank" href="https://github.com/danielbeeke/uhtml-ldflex/blob/master/demo/demo.ts">here</a>?
-
-      <ul>
-      <li>uHTML templating engine, that automatically resolves LDflex paths via type specific handlers.</li>
-      <li>Multiple calls inside a template are bundled into one query via the preload function of LDflex.</li>
-      <li>The query bundling also works for .map(). A custom LDflex handler is written for that use case.</li>
-      <li>Promises first show a preloader and then are shown.</li>
-      <li>Dont mind the different languages, the demonstration is here to show fetching.</li>
-      </ul>
-    </p>
 
     <div class="philosopher">
       <h1>${soren.label}</h1>
