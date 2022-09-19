@@ -90,7 +90,7 @@ const mapValue = (options, value, preloader) => {
     const parentNode = comment.parentNode
 
     if (parentNode && parentNode instanceof HTMLElement) {
-      render(parentNode, loaders.get(value) ?? options.loader())
+      render(parentNode, loaders.get(value) ?? options.loader(value))
 
       if (isPromise && !isLDflex) {
         return value.then(resolved => render(parentNode, html`${resolved}`))

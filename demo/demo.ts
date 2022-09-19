@@ -3,35 +3,25 @@ import { withLoader } from '../src/helpers/withLoader'
 import { langMatches } from 'ldflex/src/filters'
 import asyncHandlers from '@ldflex/async-iteration-handlers'
 
+const loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a feugiat turpis. Nam bibendum sed nibh et vestibulum. Praesent nibh neque, imperdiet in eleifend vitae, auctor in erat. Vestibulum fermentum consectetur urna, id lacinia neque facilisis sollicitudin. Aenean quis purus tellus. Nunc risus leo, suscipit quis massa nec, hendrerit congue justo.'
+
 export const { html, render, Hole, get: getter } = createHtml({
-  loader: () => html`<span class="loader">Loading...</span>`,
+  loader: (path) => {
+    const property = path?.path?.property
+    
+    const propertyLenghts = {
+      label: 20,
+      deathYear: 4,
+      rdfs_comment: 1000
+    }
+
+    return property ? html`<span class="lorem">${loremIpsum.substring(0, propertyLenghts[property] ?? 10)}</span>` :
+    html`<span class="loader">Loading...</span>`
+  },
   error: (exception) => html``,
   prefixes,
   extraLDflexHandlers: {
     ...asyncHandlers,
-    map1: {
-      handle: (pathData, path) => {
-        return async (callback) => {
-          const result = []
-      
-          const pathFetch = function (templates, ...values) {
-            return values
-          }
-
-          const subPaths = callback(path, pathFetch).filter(Boolean)
-
-          if (subPaths.length) {
-            await path.bundle(subPaths, true)
-          }
-    
-          for await (const subPath of path) {
-            result.push(callback(subPath, html))
-          }
-    
-          return html`${result}`  
-        }
-      }
-    }
   },
   dataHandlers: {
     'rdf:langString': (value) => value,
@@ -45,9 +35,6 @@ export const { html, render, Hole, get: getter } = createHtml({
     }
   }
 })
-
-const loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a feugiat turpis. Nam bibendum sed nibh et vestibulum. Praesent nibh neque, imperdiet in eleifend vitae, auctor in erat. Vestibulum fermentum consectetur urna, id lacinia neque facilisis sollicitudin. Aenean quis purus tellus. Nunc risus leo, suscipit quis massa nec, hendrerit congue justo.'
-const loader = (length) => html`<span class="lorem">${loremIpsum.substring(0, length)}</span>`
 
 const get = (url) => getter(url, 'dbo', 'https://dbpedia.org/sparql')
 
@@ -85,24 +72,27 @@ const draw = async () => {
       ${philosopherData.map(([person, url]) => html`
       <div class="col">
         <div class="card">
-          <img onload=${(event) => event.target.classList.add('loaded')} src=${person.thumbnail} class="card-img-top" alt=" ">
+          <img onload=${(event) => {
+            event.target.classList.add('loaded')
+            const items = event.target.closest('.card').querySelectorAll('.lorem')
+            for (const item of items) item.classList.remove('lorem')
+          }} src=${person.thumbnail} class="card-img-top" alt=" ">
           <div class="card-body">
             <h5 class="card-title">
-              <span>${withLoader(person.label(en), loader(20))}</span>
+              <span>${person.label(en)}</span>
             </h5>
-            <span>${withLoader(person.deathYear, loader(4))}</span>
+            <span>${person.deathYear}</span>
           
-            <p class="card-text truncate">${withLoader(person.rdfs_comment(en), loader(1000))}</p>
+            <p class="card-text truncate">${person.rdfs_comment(en)}</p>
           </div>
           
           <ul class="list-group list-group-flush" style="border-top: none;">
           <li class="list-group-item"><em class="text-muted">Works:</em></li>
           </ul>
         
-          <ul class="list-group list-group-flush" style="max-height: 200px; border-top: none; overflow-y: scroll;">
-          <li class="list-group-item"><em class="text-muted">Works:</em></li>
+          <ul class="list-group list-group-flush" style="height: 200px; border-top: none; background-color: white; overflow-y: scroll;">
           
-          ${person['^dbo:author'].label(en).map((label) => html`
+          ${person['^dbo:author'].label(en).map(label => html`
             <li class="list-group-item">
               <span>${label.value}</span>
             </li>`
@@ -110,7 +100,7 @@ const draw = async () => {
           </ul>
 
           <div class="card-footer">
-            <a href=${url} target="_blank" class="btn btn-primary">Read more</a>
+            <a href=${url} target="_blank" class="btn btn-primary float-end">Read more</a>
           </div>      
 
         </div>
