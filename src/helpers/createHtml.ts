@@ -2,7 +2,6 @@ import { html, render, Hole } from 'uhtml'
 import { JsonLdContextNormalized } from 'jsonld-context-parser'
 import { foreign } from 'uhandlers'
 import { loaders } from './withLoader'
-import { preloadPaths } from './preloadPaths'
 import { path } from './path'
 
 const ldflexAttribute = (value, preloader) => foreign((node, name, value) => {
@@ -36,14 +35,31 @@ export const createHtml = (options: {
   }
 
   const htmlReplacement = function (templates, ...values) {
-    const paths = values.filter(value => typeof value?.extendPath === 'function')
-    const preloader = paths.length ? preloadPaths(paths) : Promise.resolve()
+    const paths = values.filter(value => typeof value?.extendPath === 'function');
+    const trails = new Map();
+    let preloader = Promise.resolve()
+
+    for (const path of paths) {
+      const subject = path.parent.subject.value
+      if (!trails.has(subject))
+        trails.set(subject, []);
+
+      const subjectPaths = trails.get(subject);
+      subjectPaths.push(path);
+    }
+
+    for (const subjectPaths of trails.values()) {
+      const { parent } = subjectPaths[0];
+      preloader = preloader.then(() => parent.proxy.bundle(subjectPaths))
+    }
 
     values = values.map((value, index) => {
       const isAttr = templates[index].trim().endsWith('=')
       const isLDflex = typeof value?.extendPath === 'function'
 
-      if (isAttr && isLDflex) return ldflexAttribute(value, preloader)
+      if (isAttr && isLDflex) {
+        return ldflexAttribute(value, preloader)
+      }
       
       return mapValue(options, value, preloader)
     })

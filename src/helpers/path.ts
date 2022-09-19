@@ -1,26 +1,30 @@
 import PathFactory from './PathFactory'
 import FetchEngine from './FetchEngine'
-import PreloadHandler from './PreloadHandler'
-import AsyncIteratorHandler from 'ldflex/module/AsyncIteratorHandler';
-import { listHandler, containerHandler, collectionHandler } from 'ldflex/module/CollectionsHandler';
-import DataHandler from 'ldflex/module/DataHandler';
-import ExecuteQueryHandler from 'ldflex/module/ExecuteQueryHandler';
-import GetHandler from 'ldflex/module/GetFunctionHandler';
-import MutationExpressionsHandler from 'ldflex/module/MutationExpressionsHandler';
-import PathExpressionHandler from 'ldflex/module/PathExpressionHandler';
-import PredicateHandler from 'ldflex/module/PredicateHandler';
-import PredicatesHandler from 'ldflex/module/PredicatesHandler';
-import PropertiesHandler from 'ldflex/module/PropertiesHandler';
-import SortHandler from 'ldflex/module/SortHandler';
-import SparqlHandler from 'ldflex/module/SparqlHandler';
-import StringToLDflexHandler from 'ldflex/module/StringToLDflexHandler';
-import SubjectHandler from 'ldflex/module/SubjectHandler';
-import SubjectsHandler from 'ldflex/module/SubjectsHandler';
-import ThenHandler from 'ldflex/module/ThenHandler';
-import ToArrayHandler from 'ldflex/module/ToArrayHandler';
-import { termToPrimitive } from 'ldflex/module/valueUtils';
-import { handler } from 'ldflex/module/handlerUtil';
-import { prefixHandler, namespaceHandler, fragmentHandler } from 'ldflex/module/URIHandler';
+import PreloadHandler from 'ldflex/src/PreloadHandler';
+import AsyncIteratorHandler from 'ldflex/src/AsyncIteratorHandler';
+import { listHandler, containerHandler, collectionHandler } from 'ldflex/src/CollectionsHandler';
+import DataHandler from 'ldflex/src/DataHandler';
+import ExecuteQueryHandler from 'ldflex/src/ExecuteQueryHandler';
+import GetHandler from 'ldflex/src/GetFunctionHandler';
+import MutationExpressionsHandler from 'ldflex/src/MutationExpressionsHandler';
+import PathExpressionHandler from 'ldflex/src/PathExpressionHandler';
+import PredicateHandler from 'ldflex/src/PredicateHandler';
+import PredicatesHandler from 'ldflex/src/PredicatesHandler';
+import PropertiesHandler from 'ldflex/src/PropertiesHandler';
+import SortHandler from 'ldflex/src/SortHandler';
+import SparqlHandler from 'ldflex/src/SparqlHandler';
+import StringToLDflexHandler from 'ldflex/src/StringToLDflexHandler';
+import SubjectHandler from 'ldflex/src/SubjectHandler';
+import SubjectsHandler from 'ldflex/src/SubjectsHandler';
+import ThenHandler from 'ldflex/src/ThenHandler';
+import ToArrayHandler from 'ldflex/src/ToArrayHandler';
+import { PathHandler } from 'ldflex/src/PathHandler';
+import { ParentHandler } from 'ldflex/src/ParentHandler';
+import { termToPrimitive } from 'ldflex/src/valueUtils';
+import { handler } from 'ldflex/src/handlerUtil';
+import { prefixHandler, namespaceHandler, fragmentHandler } from 'ldflex/src/URIHandler';
+import BundleHandler from 'ldflex/src/BundleHandler';
+
 /**
  * A map with default property handlers.
  */
@@ -97,54 +101,13 @@ function subjectToPrimitiveHandler() {
   });
 }
 
-class ParentHandler {
-  handle(pathData) {
-    let node = pathData
-    while (node.parent) node = node.parent
-    return node
-  }
-}
-
-class PathHandler {
-  handle(pathData) {
-     return pathData
-  }
-}
-
-export const map = {
-  handle: (pathData, path) => {
-    return async (callback) => {
-      const result = []
-      
-      const innerPredicates = []
-
-      const tester = new Proxy({}, {
-        get(target, property, receiver) {
-          innerPredicates.push(property)
-          return Reflect.get(target, property, receiver)
-        }
-      })
-
-      callback(tester)
-
-      await path.preload(innerPredicates)
-
-      for await (const subPath of path) {
-        result.push(callback(subPath))
-      }
-
-      return result  
-    }
-  }
-}
-
 const handlers = {
   ...defaultHandlers,
 
   parent: new ParentHandler(),
   path: new PathHandler(),
   preload: new PreloadHandler(),
-  map
+  bundle: new BundleHandler()
 }
 
 export const path = (iri: string, prefixes, vocab?: string, source?: string, extraLDflexHandlers: { [key: string]: any } = {}) => {

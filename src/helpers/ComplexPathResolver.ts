@@ -1,4 +1,4 @@
-import AbstractPathResolver from 'ldflex/module/AbstractPathResolver';
+import AbstractPathResolver from 'ldflex/src/AbstractPathResolver';
 
 /**
  * This is a mutilated version of the LDflex ComplexPathResolver.

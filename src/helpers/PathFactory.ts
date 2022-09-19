@@ -1,9 +1,9 @@
-import PathProxy from 'ldflex/module/PathProxy';
-import JSONLDResolver from 'ldflex/module/JSONLDResolver';
+import PathProxy from 'ldflex/src/PathProxy';
+import JSONLDResolver from 'ldflex/src/JSONLDResolver';
 import ComplexPathResolver from './ComplexPathResolver';
-import defaultHandlers from 'ldflex/module/defaultHandlers';
+import defaultHandlers from 'ldflex/src/defaultHandlers';
 import { ContextParser } from 'jsonld-context-parser';
-import ContextProvider from 'ldflex/module/ContextProvider';
+import ContextProvider from 'ldflex/src/ContextProvider';
 /**
  * A PathFactory creates paths with default settings.
  */

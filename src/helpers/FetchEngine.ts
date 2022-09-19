@@ -28,6 +28,15 @@ export default class FetchEngine {
     for (const binding of bindings) {
       yield new Proxy(binding, {
         get (target, name) {
+          if (name === 'values')
+            return () => {
+              const key = Object.keys(binding)[0]
+              // console.log(binding)
+              return toIterator([binding[key]]);
+            }
+
+          if (name === 'size') return 1
+
           if (name === 'get') {
             return (variable) => binding[variable]
           }
@@ -35,4 +44,9 @@ export default class FetchEngine {
       })
     }
   }
+}
+
+function *toIterator<T>(iterable: Iterable<T>): Iterator<T> {
+  for (const i of iterable)
+    yield i;
 }
